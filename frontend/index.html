@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hiligaynon Spell Checker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div class="app">
+
+  <!-- Header -->
+  <header class="header">
+    <div class="header-left">
+      <div class="logo">
+        <img src="logo.png" alt="Logo" width="34" height="34" style="border-radius:9px;display:block;">
+      </div>
+      <span class="app-title">Hiligaynon Spell Checker</span>
+    </div>
+    <div class="header-right">
+      <span class="autocorrect-label">Auto-correct</span>
+      <label class="toggle">
+        <input type="checkbox" id="autocorrect-toggle">
+        <span class="toggle-track"></span>
+        <span class="toggle-thumb"></span>
+      </label>
+      <button class="info-btn" title="About" onclick="showInfo()">&#9432;</button>
+    </div>
+  </header>
+
+  <!-- Editor -->
+  <div class="editor-wrap" id="editor-wrap">
+    <div
+      class="editor-display"
+      id="editor-display"
+      contenteditable="true"
+      spellcheck="false"
+      autocorrect="off"
+      data-placeholder="Start typing in Hiligaynon…"
+    ></div>
+
+    <!-- Suggestion popup -->
+    <div class="popup" id="popup">
+      <div class="popup-header">
+        <span class="popup-title">Did you mean?</span>
+        <button class="popup-close" id="popup-close">&#215;</button>
+      </div>
+      <div class="suggestions-list" id="suggestions-list"></div>
+      <div class="popup-footer">
+        <span class="kbd-icon">⌨</span>
+        <span class="popup-hint">Press 1, 2, or 3 to choose</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Status bar -->
+  <footer class="statusbar">
+    <div class="lang-select-wrap">
+      <span class="lang-label">Language:</span>
+      <select class="lang-select" id="lang-select">
+        <option value="hiligaynon">Hiligaynon</option>
+        <option value="english">English</option>
+      </select>
+    </div>
+    <div class="status-right">
+      <span class="word-count" id="word-count">Words: 0</span>
+      <div class="status-dot">
+        <span class="dot" id="status-dot"></span>
+        <span class="status-text" id="status-text">No issues</span>
+      </div>
+    </div>
+  </footer>
+</div>
+
+
+<script src="js/api.js"></script>
+<script src="js/editor.js"></script>
+<script src="js/popup.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>
