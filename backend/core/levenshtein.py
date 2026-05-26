@@ -1,16 +1,7 @@
 # FILENAME: levenshtein.py
 
-from types import SimpleNamespace
-
 class Levenshtein:
     def __init__(self, source, target):
-        # direction constants
-        self.DIRECTIONS = SimpleNamespace(
-            UP      = (-1, 0),
-            LEFT    = (0, -1),
-            UP_LEFT = (-1, -1)
-        )
-        
         # cache matrix grid
         self.cache = [ [float("inf")]  * (len(target) + 1) for i in range(len(source) + 1)]
         self.source_len = len(source)
@@ -23,33 +14,35 @@ class Levenshtein:
         for j in range(self.target_len + 1):
             self.cache[0][j] = j
 
-    # +--- MAIN METHODS ---+ #
-    def copy(self):
-        pass
+    def copy(self, k, l) -> int:
+        # diagonal neighbor (up-left)
+        # match or substitute
+        return self.cache[k - 1][l - 1]
 
-    def insert(self):
-        pass
+    def insert(self, k, l) -> int:
+        # left neighbor --- insert a character
+        return 1 + self.cache[k][l - 1]
 
-    def delete(self):
-        pass
+    def delete(self, k, l) -> int:
+        # upper neighbor --- delete a character
+        return 1 + self.cache[k - 1][l]
+    
+    def sub_cost(self, x, y) -> int:
+        # substitution cost
+        return 0 if x == y else 1
 
-    def minDistance(self, source, target):
-        for k in range(self.source_len + 1):
-            for l in range(self.target_len + 1):
-                # solve for current neighbor positions
-                delta_row, delta_col = self.DIRECTIONS.UP
-                up_nbor = self.cache[delta_row + k][delta_col + l]
-                
-                delta_row, delta_col = self.DIRECTIONS.LEFT
-                left_nbor = self.cache[delta_row + k][delta_col + l]
-                
-                delta_row, delta_col = self.DIRECTIONS.UP_LEFT
-                upleft_nbor = self.cache[delta_row + k][delta_col + l]
-
+    # +--- MAIN METHOD ---+ #
+    def minDistance(self, source, target) -> float:
+        for k in range(1, self.source_len + 1):
+            for l in range(1, self.target_len + 1):
                 if (source[k - 1] == target[l - 1]):
-                    #copy
-                    self.cache[k][l] = upleft_nbor
-                    pass
+                    self.cache[k][l] = self.copy(k, l)
 
                 else:
-                    self.cache[k][l] = 1 + min(up_nbor, left_nbor, upleft_nbor)
+                    self.cache[k][l] = min(
+                        self.copy(k, l) + self.sub_cost(source[k - 1], target[l - 1]),
+                        self.insert(k, l),
+                        self.delete(k, l)
+                    )
+        
+        return self.cache[self.source_len][self.target_len]
