@@ -1,3 +1,5 @@
+# FILENAME: keyboard_proximity.py
+
 ADJACENT_COST = 0.5
 NORMAL_COST   = 1.0
 
@@ -31,7 +33,7 @@ KEYBOARD_ADJACENCY = {
 }
 
 
-def subsitution_cost(x, y):
+def substitution_cost(x, y):
     if (x == y):
         return 0
     

@@ -1,5 +1,8 @@
 # FILENAME: levenshtein.py
 
+# used in Weighted Levenshtein
+from core.keyboard_proximity import substitution_cost
+
 class Levenshtein:
     def __init__(self, source, target):
         # cache matrix grid
@@ -27,7 +30,7 @@ class Levenshtein:
         # upper neighbor --- delete a character
         return 1 + self.cache[k - 1][l]
     
-    def sub_cost(self, x, y) -> int:
+    def sub_cost(self, x, y) -> float:
         # substitution cost
         return 0 if x == y else 1
 
@@ -46,3 +49,8 @@ class Levenshtein:
                     )
         
         return self.cache[self.source_len][self.target_len]
+    
+
+class WeightedLevenshtein(Levenshtein):
+    def sub_cost(self, x, y) -> float:
+        return substitution_cost(x, y)
