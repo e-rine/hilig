@@ -1,24 +1,37 @@
 # FILENAME: app.py
+# Run: python -m uvicorn app:app --reload  (from backend/ folder)
 
-from fastapi import FastAPI, Query
+import os
+from fastapi import FastAPI, Query, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from contextlib import asynccontextmanager
 
-# placeholder palang ni guys
-# spell_checker na di siya dapat
-def check(word: str) -> list:
-    return [word, "placeholder1", "placeholder2"]
+from core.spell_checker import SpellChecker
+
+# ── Globals ────────────────────────────────────────────────────────────────── #
+
+checker = SpellChecker()
+WORDLIST_PATH = os.path.join(os.path.dirname(__file__), "data", "hiligaynon_wordlist.txt")
+
+# ── Lifespan (runs once on startup) ───────────────────────────────────────── #
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # runs on startup before server accepts requests
-    print("Loading Hiligaynon Wordlist into BK-Tree...")
+    print("Loading Hiligaynon wordlist into BK-Tree...")
+    if os.path.exists(WORDLIST_PATH):
+        with open(WORDLIST_PATH, "r", encoding="utf-8") as f:
+            words = [line.strip() for line in f if line.strip()]
+        checker.load_wordlist(words)
+        print(f"  OK: {checker.wordlist_size} words loaded.")
+    else:
+        print(f"  WARNING: wordlist not found at {WORDLIST_PATH}")
     yield
 
-app = FastAPI(lifespan=lifespan)
+# ── App (must be created BEFORE any @app decorators) ──────────────────────── #
 
-# CORS configuration permits local frontend file to communicate with this API
+app = FastAPI(title="Hiligaynon Spell Checker", lifespan=lifespan)
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -27,14 +40,24 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# ── Routes ─────────────────────────────────────────────────────────────────── #
+
 @app.get("/api/check")
-def check_spelling(word: str = Query(..., description="The word to look up")):
-    # endpoint that accpets a word and returns suggestions
-    suggestions = check(word)
+def check_spelling(word: str = Query(..., description="Word to spell-check")):
+    if not word or not word.strip():
+        raise HTTPException(status_code=400, detail="word must not be empty")
     return {
         "word": word,
-        "suggestions": suggestions
+        "correct": checker.is_correct(word),
+        "suggestions": checker.check(word),
     }
 
-# serve frontend statically
-app.mount("/", StaticFiles(directory="../frontend", html=True), name="frontend")
+@app.get("/api/health")
+def health():
+    return {"status": "ok", "words_loaded": checker.wordlist_size}
+
+# ── Serve frontend (mount LAST so /api routes aren't shadowed) ─────────────── #
+
+FRONTEND_DIR = os.path.join(os.path.dirname(__file__), "..", "frontend")
+if os.path.isdir(FRONTEND_DIR):
+    app.mount("/", StaticFiles(directory=FRONTEND_DIR, html=True), name="frontend")
