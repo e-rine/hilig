@@ -1,0 +1,82 @@
+PSEUDOCODE_LEVENSHTEIN
+
+    PROCEDURE levenshtein (accepts input strings source_word, target_word)
+
+    <<< comment: get length of each string >>>
+    let src_wrd_len := source_word.length
+    let tgt_wrd_len := target_word.length
+
+    let cache := matrix with size (src_wrd_len + 1) * (tgt_wrd_len + 1), filled with INF
+
+    <<< comment: initialize base cases for cache >>>
+    <<< comment: base row >>>
+    FOR-LOOP i := 0 -> src_wrd_len + 1
+        cache[i][0] = i
+
+    <<< comment: base column >>>
+    FOR-LOOP j := 0 -> tgt_wrd_len + 1
+        cache[0][j] = j
+
+
+    <<< main loop >>>
+    <<< fill table row by row >>>
+    FOR-LOOP k := 1 -> src_wrd_len + 1:
+        FOR-LOOP l := 1 -> tgt_wrd_len + 1:
+
+            <<< when characters match >>>
+            IF ( source_word[k - 1] == target_word[l - 1] ):
+                cache[k][l] = COPY_UPPER_LEFT_NEIGBOR
+
+
+            ELSE:
+                cache[k][l] := min(
+                    <<< substitute >>>
+                    cache[k-1][l-1] + sub_cost(source_word[k-1], target_word[l-1]),
+                    <<< insert >>>
+                    cache[k][l-1] + 1,
+                    <<< delete >>>
+                    cache[k-1][1] + 1
+                )
+
+    RETURN cache[src_wrd_len][tgt_wrd_len]
+
+
+PSEUDOCODE_BKTREE
+    PROCEDURE BKTree_Insert (accepts input strings tree, word)
+
+    IF tree is empty:
+        tree.root := BKNode(word)
+        RETURN
+
+    current := tree.root
+
+    WHILE [condition] 
+        d := levenshtein(current.word, word)
+
+        IF d NOT IN current.children:
+            current.children[d] := BKNode(word)
+            BREAK
+        ELSE:
+            current := current.children[d]
+
+    PROCEDURE BKTree_Query(tree, query_word, threshold)
+
+        IF tree is empty:
+            RETURN []
+        
+        WHILE stack is not empty:
+            current := stack.pop()
+            d := levenshtein(current.word, query_word)
+
+            IF d <= threshold:
+                results.APPEND((current.word, d))
+
+            FOR EACH (edge, child) IN current.children:
+                IF (d - threshold) <= edge <= (d + threshold):
+                    stack.PUSH(child)
+
+        RETURN results sorted by distance ascending
+
+    
+
+PSEUDOCODE_LEVENSHTEIN
